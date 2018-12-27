@@ -1,0 +1,66 @@
+.grid-cell {
+  width: 100px;
+  height: 100px;
+  margin-top: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  float: left;
+  border-radius: 2px;
+  background: lightgray;
+  text-align: center;
+}
+
+.grid-cell-0 {
+  background: rgb(85, 85, 85);
+  opacity: 20%;
+  color: rgb(85, 85, 85);
+}
+
+.grid-cell-2 {
+  background: rgb(235, 235, 235);
+}
+
+.grid-cell-4 {
+  background: tan;
+}
+
+.grid-cell-8 {
+  background: orange;
+}
+
+.grid-cell-16 {
+  background: lightgreen;
+}
+
+.grid-cell-32 {
+  background: lightblue;
+}
+
+.grid-cell-64 {
+  background: pink;
+}
+
+.grid-cell-128 {
+  background: yellow;
+}
+
+.grid-cell-256 {
+  background: rgb(194, 255, 96);
+}
+
+.grid-cell-512 {
+  background: rgb(226, 162, 255);
+}
+
+.grid-cell-1024 {
+  background: lightcoral;
+}
+
+.grid-cell-2048 {
+  background: gold;
+}
+
+.grid-cell-4096 {
+  background: rgb(89, 89, 153);
+}

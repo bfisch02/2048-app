@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import "./tileGrid.css";
+import Tile from "./tile.jsx";
 
 class TileGrid extends Component {
   state = {
@@ -233,60 +234,28 @@ class TileGrid extends Component {
     return (
       <div className="grid-container">
         <div className="grid-row">
-          <div className={this.getGridCellClasses(0, 0)}>
-            {this.state.tiles[0][0].value}
-          </div>
-          <div className={this.getGridCellClasses(0, 1)}>
-            {this.state.tiles[0][1].value}
-          </div>
-          <div className={this.getGridCellClasses(0, 2)}>
-            {this.state.tiles[0][2].value}
-          </div>
-          <div className={this.getGridCellClasses(0, 3)}>
-            {this.state.tiles[0][3].value}
-          </div>
+          <Tile value={this.state.tiles[0][0].value} />
+          <Tile value={this.state.tiles[0][1].value} />
+          <Tile value={this.state.tiles[0][2].value} />
+          <Tile value={this.state.tiles[0][3].value} />
         </div>
         <div className="grid-row">
-          <div className={this.getGridCellClasses(1, 0)}>
-            {this.state.tiles[1][0].value}
-          </div>
-          <div className={this.getGridCellClasses(1, 1)}>
-            {this.state.tiles[1][1].value}
-          </div>
-          <div className={this.getGridCellClasses(1, 2)}>
-            {this.state.tiles[1][2].value}
-          </div>
-          <div className={this.getGridCellClasses(1, 3)}>
-            {this.state.tiles[1][3].value}
-          </div>
+          <Tile value={this.state.tiles[1][0].value} />
+          <Tile value={this.state.tiles[1][1].value} />
+          <Tile value={this.state.tiles[1][2].value} />
+          <Tile value={this.state.tiles[1][3].value} />
         </div>
         <div className="grid-row">
-          <div className={this.getGridCellClasses(2, 0)}>
-            {this.state.tiles[2][0].value}
-          </div>
-          <div className={this.getGridCellClasses(2, 1)}>
-            {this.state.tiles[2][1].value}
-          </div>
-          <div className={this.getGridCellClasses(2, 2)}>
-            {this.state.tiles[2][2].value}
-          </div>
-          <div className={this.getGridCellClasses(2, 3)}>
-            {this.state.tiles[2][3].value}
-          </div>
+          <Tile value={this.state.tiles[2][0].value} />
+          <Tile value={this.state.tiles[2][1].value} />
+          <Tile value={this.state.tiles[2][2].value} />
+          <Tile value={this.state.tiles[2][3].value} />
         </div>
         <div className="grid-row">
-          <div className={this.getGridCellClasses(3, 0)}>
-            {this.state.tiles[3][0].value}
-          </div>
-          <div className={this.getGridCellClasses(3, 1)}>
-            {this.state.tiles[3][1].value}
-          </div>
-          <div className={this.getGridCellClasses(3, 2)}>
-            {this.state.tiles[3][2].value}
-          </div>
-          <div className={this.getGridCellClasses(3, 3)}>
-            {this.state.tiles[3][3].value}
-          </div>
+          <Tile value={this.state.tiles[3][0].value} />
+          <Tile value={this.state.tiles[3][1].value} />
+          <Tile value={this.state.tiles[3][2].value} />
+          <Tile value={this.state.tiles[3][3].value} />
         </div>
       </div>
     );
