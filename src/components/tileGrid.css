@@ -72,3 +72,7 @@
 .grid-cell-2048 {
   background: gold;
 }
+
+.grid-cell-4096 {
+  background: rgb(89, 89, 153);
+}
