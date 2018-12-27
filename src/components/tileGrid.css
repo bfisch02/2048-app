@@ -1,6 +1,6 @@
 .grid-container {
   position: absolute;
-  background: darkslategray;
+  background: black;
   margin-top: 20px;
   margin-left: 20px;
   z-index: 1;
@@ -21,4 +21,54 @@
   border-radius: 2px;
   background: lightgray;
   text-align: center;
+}
+
+.grid-cell-0 {
+  background: rgb(27, 27, 27);
+  opacity: 20%;
+  color: rgb(27, 27, 27);
+}
+
+.grid-cell-2 {
+  background: rgb(235, 235, 235);
+}
+
+.grid-cell-4 {
+  background: tan;
+}
+
+.grid-cell-8 {
+  background: orange;
+}
+
+.grid-cell-16 {
+  background: lightgreen;
+}
+
+.grid-cell-32 {
+  background: lightblue;
+}
+
+.grid-cell-64 {
+  background: pink;
+}
+
+.grid-cell-128 {
+  background: yellow;
+}
+
+.grid-cell-256 {
+  background: rgb(194, 255, 96);
+}
+
+.grid-cell-512 {
+  background: rgb(226, 162, 255);
+}
+
+.grid-cell-1024 {
+  background: lightcoral;
+}
+
+.grid-cell-2048 {
+  background: gold;
 }
