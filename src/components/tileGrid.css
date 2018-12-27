@@ -1,0 +1,24 @@
+.grid-container {
+  position: absolute;
+  background: darkslategray;
+  margin-top: 20px;
+  margin-left: 20px;
+  z-index: 1;
+}
+
+.grid-row {
+  margin-bottom: 15px;
+}
+
+.grid-cell {
+  width: 100px;
+  height: 100px;
+  margin-top: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  float: left;
+  border-radius: 2px;
+  background: lightgray;
+  text-align: center;
+}
