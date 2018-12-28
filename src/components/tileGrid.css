@@ -1,11 +1,54 @@
 .grid-container {
-  position: absolute;
+  position: relative;
   background: black;
+  width: 500px;
+  height: 500px;
   margin-top: 20px;
   margin-left: 20px;
   z-index: 1;
 }
 
 .grid-row {
-  margin-bottom: 15px;
+  position: absolute;
+  width: 500px;
+  height: 100px;
+}
+
+.grid-row-0 {
+  top: 20px;
+}
+
+.grid-row-1 {
+  top: 140px;
+}
+
+.grid-row-2 {
+  top: 260px;
+}
+
+.grid-row-3 {
+  top: 380px;
+}
+
+.grid-cell {
+  background: gray;
+  position: absolute;
+  width: 100px;
+  height: 100px;
+}
+
+.grid-cell-0 {
+  left: 20px;
+}
+
+.grid-cell-1 {
+  left: 140px;
+}
+
+.grid-cell-2 {
+  left: 260px;
+}
+
+.grid-cell-3 {
+  left: 380px;
 }

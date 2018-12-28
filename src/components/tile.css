@@ -1,66 +1,189 @@
-.grid-cell {
+.grid-tile {
+  position: absolute;
   width: 100px;
   height: 100px;
-  margin-top: 5px;
-  margin-left: 5px;
-  margin-right: 5px;
-  margin-bottom: 5px;
   float: left;
   border-radius: 2px;
   background: lightgray;
   text-align: center;
 }
 
-.grid-cell-0 {
-  background: rgb(85, 85, 85);
-  opacity: 20%;
-  color: rgb(85, 85, 85);
+.grid-tile-row-0 {
+  top: 20px;
 }
 
-.grid-cell-2 {
+.grid-tile-row-1 {
+  top: 140px;
+}
+
+.grid-tile-row-2 {
+  top: 260px;
+}
+
+.grid-tile-row-3 {
+  top: 380px;
+}
+
+.grid-tile-col-0 {
+  left: 20px;
+}
+
+.grid-tile-col-1 {
+  left: 140px;
+}
+
+.grid-tile-col-2 {
+  left: 260px;
+}
+
+.grid-tile-col-3 {
+  left: 380px;
+}
+
+.grid-tile-from-row-0 {
+  animation-name: from-row-0;
+  animation-duration: 0.25s;
+}
+
+.grid-tile-from-row-1 {
+  animation-name: from-row-1;
+  animation-duration: 0.25s;
+}
+
+.grid-tile-from-row-2 {
+  animation-name: from-row-2;
+  animation-duration: 0.25s;
+}
+
+.grid-tile-from-row-3 {
+  animation-name: from-row-3;
+  animation-duration: 0.25s;
+}
+
+.grid-tile-from-col-0 {
+  animation-name: from-col-0;
+  animation-duration: 0.25s;
+}
+
+.grid-tile-from-col-1 {
+  animation-name: from-col-1;
+  animation-duration: 0.25s;
+}
+
+.grid-tile-from-col-2 {
+  animation-name: from-col-2;
+  animation-duration: 0.25s;
+}
+
+.grid-tile-from-col-3 {
+  animation-name: from-col-3;
+  animation-duration: 0.25s;
+}
+
+@keyframes from-row-0 {
+  0% {
+    top: 20px;
+  }
+}
+
+@keyframes from-row-1 {
+  0% {
+    top: 140px;
+  }
+}
+@keyframes from-row-2 {
+  0% {
+    top: 260px;
+  }
+}
+@keyframes from-row-3 {
+  0% {
+    top: 380px;
+  }
+}
+
+@keyframes from-col-0 {
+  0% {
+    left: 20px;
+  }
+}
+
+@keyframes from-col-1 {
+  0% {
+    left: 140px;
+  }
+}
+@keyframes from-col-2 {
+  0% {
+    left: 260px;
+  }
+}
+@keyframes from-col-3 {
+  0% {
+    left: 380px;
+  }
+}
+
+.grid-tile-0 {
+  visibility: hidden;
+}
+
+.grid-tile-2 {
   background: rgb(235, 235, 235);
+  z-index: 2;
 }
 
-.grid-cell-4 {
+.grid-tile-4 {
   background: tan;
+  z-index: 3;
 }
 
-.grid-cell-8 {
+.grid-tile-8 {
   background: orange;
+  z-index: 4;
 }
 
-.grid-cell-16 {
+.grid-tile-16 {
   background: lightgreen;
+  z-index: 5;
 }
 
-.grid-cell-32 {
+.grid-tile-32 {
   background: lightblue;
+  z-index: 6;
 }
 
-.grid-cell-64 {
+.grid-tile-64 {
   background: pink;
+  z-index: 7;
 }
 
-.grid-cell-128 {
+.grid-tile-128 {
   background: yellow;
+  z-index: 8;
 }
 
-.grid-cell-256 {
+.grid-tile-256 {
   background: rgb(194, 255, 96);
+  z-index: 9;
 }
 
-.grid-cell-512 {
+.grid-tile-512 {
   background: rgb(226, 162, 255);
+  z-index: 10;
 }
 
-.grid-cell-1024 {
+.grid-tile-1024 {
   background: lightcoral;
+  z-index: 11;
 }
 
-.grid-cell-2048 {
+.grid-tile-2048 {
   background: gold;
+  z-index: 12;
 }
 
-.grid-cell-4096 {
+.grid-tile-4096 {
   background: rgb(89, 89, 153);
+  z-index: 13;
 }

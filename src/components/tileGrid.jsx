@@ -3,6 +3,8 @@ import "./tileGrid.css";
 import Tile from "./tile.jsx";
 
 class TileGrid extends Component {
+  tileCount = 0;
+
   state = {
     tiles: []
   };
@@ -12,19 +14,22 @@ class TileGrid extends Component {
     this.state.tiles = this.createInitialTileGrid();
   }
 
-  createTile = value => {
+  createTile = (value, tileIndex = undefined, previousPosition = undefined) => {
+    const index = tileIndex !== undefined ? tileIndex : this.tileCount++;
     return {
+      index: index,
       value: value,
-      canUpdate: true
+      canUpdate: true,
+      previousPosition: previousPosition
     };
   };
 
   createInitialTileGrid = () => {
     let tiles = [];
-    for (let i = 0; i < 4; ++i) {
+    for (let row = 0; row < 4; ++row) {
       tiles.push([]);
-      for (let j = 0; j < 4; ++j) {
-        tiles[i].push(this.createTile(0));
+      for (let col = 0; col < 4; ++col) {
+        tiles[row].push(this.createTile(0));
       }
     }
     this.addRandomTile(tiles);
@@ -37,7 +42,11 @@ class TileGrid extends Component {
     for (let row = 0; row < this.state.tiles.length; ++row) {
       tilesCopy.push([]);
       for (let col = 0; col < this.state.tiles[row].length; ++col) {
-        tilesCopy[row].push(this.createTile(this.state.tiles[row][col].value));
+        const tile = this.state.tiles[row][col];
+        const previousPosition = [row, col];
+        tilesCopy[row].push(
+          this.createTile(tile.value, tile.index, previousPosition)
+        );
       }
     }
     return tilesCopy;
@@ -60,7 +69,7 @@ class TileGrid extends Component {
       const column = Math.floor(Math.random() * 4);
       if (tiles[row][column].value === 0) {
         const value = Math.random() < 0.8 ? 2 : 4;
-        tiles[row][column].value = value;
+        tiles[row][column] = this.createTile(value);
         return;
       }
     }
@@ -158,105 +167,150 @@ class TileGrid extends Component {
     this.setState({ tiles: tiles });
   };
 
+  moveTile = (tiles, rowPrev, colPrev, rowNext, colNext) => {
+    const tile = tiles[rowPrev][colPrev];
+    const previousPosition =
+      tile.previousPosition !== undefined
+        ? tile.previousPosition
+        : [rowPrev, colPrev];
+    console.log("MOVING TILE! PREVIOUS POSITION:", previousPosition);
+    const tileCopy = this.createTile(tile.value, tile.index, previousPosition);
+    tiles[rowNext][colNext] = tileCopy;
+    tiles[rowPrev][colPrev] = this.createTile(0);
+  };
+
   moveLeft = (tiles, row, column) => {
-    if (column === 0) return;
-    const value = tiles[row][column].value;
-    if (tiles[row][column - 1].value === 0) {
-      tiles[row][column - 1].value = value;
-      tiles[row][column].value = 0;
-      this.moveLeft(tiles, row, column - 1);
-    } else if (
-      tiles[row][column - 1].canUpdate &&
-      tiles[row][column - 1].value === value
-    ) {
-      tiles[row][column - 1].value *= 2;
-      tiles[row][column - 1].canUpdate = false;
-      tiles[row][column].value = 0;
-    }
+    const adjacentRowOffset = 0;
+    const adjacentColOffset = -1;
+    this.moveInDirection(
+      tiles,
+      row,
+      column,
+      adjacentRowOffset,
+      adjacentColOffset
+    );
   };
 
   moveRight = (tiles, row, column) => {
-    if (column === tiles[row].length - 1) return;
-    const value = tiles[row][column].value;
-    if (tiles[row][column + 1].value === 0) {
-      tiles[row][column + 1].value = value;
-      tiles[row][column].value = 0;
-      this.moveRight(tiles, row, column + 1);
-    } else if (
-      tiles[row][column + 1].canUpdate &&
-      tiles[row][column + 1].value === value
-    ) {
-      tiles[row][column + 1].value *= 2;
-      tiles[row][column + 1].canUpdate = false;
-      tiles[row][column].value = 0;
-    }
+    const adjacentRowOffset = 0;
+    const adjacentColOffset = 1;
+    this.moveInDirection(
+      tiles,
+      row,
+      column,
+      adjacentRowOffset,
+      adjacentColOffset
+    );
   };
 
   moveUp = (tiles, row, column) => {
-    if (row === 0) return;
-    const value = tiles[row][column].value;
-    if (tiles[row - 1][column].value === 0) {
-      tiles[row - 1][column].value = value;
-      tiles[row][column].value = 0;
-      this.moveUp(tiles, row - 1, column);
-    } else if (
-      tiles[row - 1][column].canUpdate &&
-      tiles[row - 1][column].value === value
-    ) {
-      tiles[row - 1][column].value *= 2;
-      tiles[row - 1][column].canUpdate = false;
-      tiles[row][column].value = 0;
-    }
+    const adjacentRowOffset = -1;
+    const adjacentColOffset = 0;
+    this.moveInDirection(
+      tiles,
+      row,
+      column,
+      adjacentRowOffset,
+      adjacentColOffset
+    );
   };
 
   moveDown = (tiles, row, column) => {
-    if (row === tiles.length - 1) return;
-    const value = tiles[row][column].value;
-    if (tiles[row + 1][column].value === 0) {
-      tiles[row + 1][column].value = value;
-      tiles[row][column].value = 0;
-      this.moveDown(tiles, row + 1, column);
-    } else if (
-      tiles[row + 1][column].canUpdate &&
-      tiles[row + 1][column].value === value
-    ) {
-      tiles[row + 1][column].value *= 2;
-      tiles[row + 1][column].canUpdate = false;
-      tiles[row][column].value = 0;
-    }
+    const adjacentRowOffset = 1;
+    const adjacentColOffset = 0;
+    this.moveInDirection(
+      tiles,
+      row,
+      column,
+      adjacentRowOffset,
+      adjacentColOffset
+    );
   };
 
-  getGridCellClasses = (row, col) => {
-    return "grid-cell grid-cell-" + this.state.tiles[row][col].value;
+  moveInDirection = (
+    tiles,
+    row,
+    column,
+    adjacentRowOffset,
+    adjacentColOffset
+  ) => {
+    const adjacentRow = row + adjacentRowOffset;
+    const adjacentCol = column + adjacentColOffset;
+    if (
+      adjacentRow < 0 ||
+      adjacentRow > 3 ||
+      adjacentCol < 0 ||
+      adjacentCol > 3
+    ) {
+      return;
+    }
+
+    const tile = tiles[row][column];
+    if (tile.value === 0) {
+      return;
+    }
+
+    const adjacentTile = tiles[adjacentRow][adjacentCol];
+
+    if (adjacentTile.value === 0) {
+      this.moveTile(tiles, row, column, adjacentRow, adjacentCol);
+      this.moveInDirection(
+        tiles,
+        adjacentRow,
+        adjacentCol,
+        adjacentRowOffset,
+        adjacentColOffset
+      );
+    } else if (adjacentTile.canUpdate && adjacentTile.value === tile.value) {
+      tiles[adjacentRow][adjacentCol] = this.createTile(
+        tile.value * 2,
+        undefined,
+        tile.previousPosition
+      );
+      tiles[adjacentRow][adjacentCol].canUpdate = false;
+      tiles[row][column] = this.createTile(0);
+    }
   };
 
   render() {
     return (
       <div className="grid-container">
-        <div className="grid-row">
-          <Tile value={this.state.tiles[0][0].value} />
-          <Tile value={this.state.tiles[0][1].value} />
-          <Tile value={this.state.tiles[0][2].value} />
-          <Tile value={this.state.tiles[0][3].value} />
+        <div className="grid-row grid-row-0">
+          <div className="grid-cell grid-cell-0" />
+          <div className="grid-cell grid-cell-1" />
+          <div className="grid-cell grid-cell-2" />
+          <div className="grid-cell grid-cell-3" />
         </div>
-        <div className="grid-row">
-          <Tile value={this.state.tiles[1][0].value} />
-          <Tile value={this.state.tiles[1][1].value} />
-          <Tile value={this.state.tiles[1][2].value} />
-          <Tile value={this.state.tiles[1][3].value} />
+        <div className="grid-row grid-row-1">
+          <div className="grid-cell grid-cell-0" />
+          <div className="grid-cell grid-cell-1" />
+          <div className="grid-cell grid-cell-2" />
+          <div className="grid-cell grid-cell-3" />
         </div>
-        <div className="grid-row">
-          <Tile value={this.state.tiles[2][0].value} />
-          <Tile value={this.state.tiles[2][1].value} />
-          <Tile value={this.state.tiles[2][2].value} />
-          <Tile value={this.state.tiles[2][3].value} />
+        <div className="grid-row grid-row-2">
+          <div className="grid-cell grid-cell-0" />
+          <div className="grid-cell grid-cell-1" />
+          <div className="grid-cell grid-cell-2" />
+          <div className="grid-cell grid-cell-3" />
         </div>
-        <div className="grid-row">
-          <Tile value={this.state.tiles[3][0].value} />
-          <Tile value={this.state.tiles[3][1].value} />
-          <Tile value={this.state.tiles[3][2].value} />
-          <Tile value={this.state.tiles[3][3].value} />
+        <div className="grid-row grid-row-3">
+          <div className="grid-cell grid-cell-0" />
+          <div className="grid-cell grid-cell-1" />
+          <div className="grid-cell grid-cell-2" />
+          <div className="grid-cell grid-cell-3" />
         </div>
+
+        {this.state.tiles.map((tileRow, row) =>
+          tileRow.map((tile, col) => (
+            <Tile
+              key={tile.index}
+              value={tile.value}
+              row={row}
+              col={col}
+              previousPosition={tile.previousPosition}
+            />
+          ))
+        )}
       </div>
     );
   }
