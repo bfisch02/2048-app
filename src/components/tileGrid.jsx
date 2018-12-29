@@ -6,7 +6,8 @@ class TileGrid extends Component {
   tileCount = 0;
 
   state = {
-    tiles: []
+    tiles: [],
+    deletedTiles: []
   };
 
   constructor(props) {
@@ -147,22 +148,37 @@ class TileGrid extends Component {
 
   moveTiles = (rowOffset, colOffset, processTilesInReverse = false) => {
     let tiles = this.copyTiles();
+    let deletedTiles = [];
     if (processTilesInReverse) {
       for (let row = tiles.length - 1; row >= 0; --row) {
         for (let column = tiles[row].length - 1; column >= 0; --column) {
-          this.moveInDirection(tiles, row, column, rowOffset, colOffset);
+          this.moveInDirection(
+            tiles,
+            deletedTiles,
+            row,
+            column,
+            rowOffset,
+            colOffset
+          );
         }
       }
     } else {
       for (let row = 0; row < tiles.length; ++row) {
         for (let column = 0; column < tiles[row].length; ++column) {
-          this.moveInDirection(tiles, row, column, rowOffset, colOffset);
+          this.moveInDirection(
+            tiles,
+            deletedTiles,
+            row,
+            column,
+            rowOffset,
+            colOffset
+          );
         }
       }
     }
     if (this.gridsEqual(tiles, this.state.tiles)) return;
     this.addRandomTile(tiles);
-    this.setState({ tiles: tiles });
+    this.setState({ tiles: tiles, deletedTiles: deletedTiles });
   };
 
   moveTile = (tiles, rowPrev, colPrev, rowNext, colNext) => {
@@ -176,8 +192,13 @@ class TileGrid extends Component {
     tiles[rowPrev][colPrev] = this.createTile(0);
   };
 
+  outOfBounds(row, col) {
+    return row < 0 || row > 3 || col < 0 || col > 3;
+  }
+
   moveInDirection = (
     tiles,
+    deletedTiles,
     row,
     column,
     adjacentRowOffset,
@@ -185,12 +206,7 @@ class TileGrid extends Component {
   ) => {
     const adjacentRow = row + adjacentRowOffset;
     const adjacentCol = column + adjacentColOffset;
-    if (
-      adjacentRow < 0 ||
-      adjacentRow > 3 ||
-      adjacentCol < 0 ||
-      adjacentCol > 3
-    ) {
+    if (this.outOfBounds(adjacentRow, adjacentCol)) {
       return;
     }
 
@@ -205,12 +221,27 @@ class TileGrid extends Component {
       this.moveTile(tiles, row, column, adjacentRow, adjacentCol);
       this.moveInDirection(
         tiles,
+        deletedTiles,
         adjacentRow,
         adjacentCol,
         adjacentRowOffset,
         adjacentColOffset
       );
     } else if (adjacentTile.canUpdate && adjacentTile.value === tile.value) {
+      deletedTiles.push({
+        value: tile.value,
+        startRow: tile.previousPosition[0],
+        endRow: adjacentRow,
+        startCol: tile.previousPosition[1],
+        endCol: adjacentCol
+      });
+      deletedTiles.push({
+        value: adjacentTile.value,
+        startRow: adjacentTile.previousPosition[0],
+        endRow: adjacentRow,
+        startCol: adjacentTile.previousPosition[1],
+        endCol: adjacentCol
+      });
       tiles[adjacentRow][adjacentCol] = this.createTile(tile.value * 2);
       tiles[adjacentRow][adjacentCol].canUpdate = false;
       tiles[row][column] = this.createTile(0);
@@ -256,6 +287,15 @@ class TileGrid extends Component {
             />
           ))
         )}
+        {this.state.deletedTiles.map(tile => (
+          <Tile
+            key={tile.index}
+            value={tile.value}
+            row={tile.endRow}
+            col={tile.endCol}
+            previousPosition={[tile.startRow, tile.startCol]}
+          />
+        ))}
       </div>
     );
   }
