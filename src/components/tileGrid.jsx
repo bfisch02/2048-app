@@ -15,60 +15,22 @@ class TileGrid extends Component {
     this.state.tiles = this.createInitialTileGrid();
   }
 
-  createTile = (value, tileIndex = undefined, previousPosition = undefined) => {
-    const index = tileIndex !== undefined ? tileIndex : this.tileCount++;
-    return {
-      index: index,
-      value: value,
-      canUpdate: true,
-      previousPosition: previousPosition
-    };
+  createEmptyTileGrid = () => {
+    return [new Array(4), new Array(4), new Array(4), new Array(4)];
   };
 
   createInitialTileGrid = () => {
-    let tiles = [];
-    for (let row = 0; row < 4; ++row) {
-      tiles.push([]);
-      for (let col = 0; col < 4; ++col) {
-        tiles[row].push(this.createTile(0));
-      }
-    }
+    let tiles = this.createEmptyTileGrid();
     this.addRandomTile(tiles);
     this.addRandomTile(tiles);
     return tiles;
-  };
-
-  copyTiles = () => {
-    let tilesCopy = [];
-    for (let row = 0; row < this.state.tiles.length; ++row) {
-      tilesCopy.push([]);
-      for (let col = 0; col < this.state.tiles[row].length; ++col) {
-        const tile = this.state.tiles[row][col];
-        const previousPosition = [row, col];
-        tilesCopy[row].push(
-          this.createTile(tile.value, tile.index, previousPosition)
-        );
-      }
-    }
-    return tilesCopy;
-  };
-
-  gridsEqual = (grid1, grid2) => {
-    for (let row = 0; row < grid1.length; ++row) {
-      for (let col = 0; col < grid1[row].length; ++col) {
-        if (grid1[row][col].value !== grid2[row][col].value) {
-          return false;
-        }
-      }
-    }
-    return true;
   };
 
   addRandomTile = tiles => {
     while (true) {
       const row = Math.floor(Math.random() * 4);
       const column = Math.floor(Math.random() * 4);
-      if (tiles[row][column].value === 0) {
+      if (tiles[row][column] === undefined) {
         const value = Math.random() < 0.8 ? 2 : 4;
         tiles[row][column] = this.createTile(value);
         return;
@@ -76,32 +38,29 @@ class TileGrid extends Component {
     }
   };
 
-  checkLoss = () => {
-    const tiles = this.state.tiles;
-    for (let row = 0; row < tiles.length; ++row) {
-      for (let col = 0; col < tiles[row].length; ++col) {
-        if (tiles[row][col].value === 0) {
-          return true;
-        }
-        const value = tiles[row][col];
-        if (row !== 0 && tiles[row - 1][col].value === value) {
-          return true;
-        } else if (
-          row !== tiles.length - 1 &&
-          tiles[row + 1][col].value === value
-        ) {
-          return true;
-        } else if (col !== 0 && tiles[row][col - 1] === value) {
-          return true;
-        } else if (
-          col !== tiles[row].length - 1 &&
-          tiles[row][col + 1] === value
-        ) {
-          return true;
+  createTile = value => {
+    const index = this.tileCount++;
+    return {
+      index: index,
+      value: value,
+      canUpdate: true,
+      previousPosition: undefined
+    };
+  };
+
+  copyTiles = () => {
+    let tilesCopy = this.createEmptyTileGrid();
+    for (let row = 0; row < this.state.tiles.length; ++row) {
+      for (let col = 0; col < this.state.tiles[row].length; ++col) {
+        const tile = this.state.tiles[row][col];
+        if (tile) {
+          tilesCopy[row][col] = { ...tile };
+          tilesCopy[row][col].previousPosition = [row, col];
+          tilesCopy[row][col].canUpdate = true;
         }
       }
     }
-    return false;
+    return tilesCopy;
   };
 
   componentDidMount() {
@@ -149,47 +108,44 @@ class TileGrid extends Component {
   moveTiles = (rowOffset, colOffset, processTilesInReverse = false) => {
     let tiles = this.copyTiles();
     let deletedTiles = [];
+    let moveOccurred = false;
     if (processTilesInReverse) {
       for (let row = tiles.length - 1; row >= 0; --row) {
         for (let column = tiles[row].length - 1; column >= 0; --column) {
-          this.moveInDirection(
-            tiles,
-            deletedTiles,
-            row,
-            column,
-            rowOffset,
-            colOffset
-          );
+          moveOccurred =
+            this.moveInDirection(
+              tiles,
+              deletedTiles,
+              row,
+              column,
+              rowOffset,
+              colOffset
+            ) || moveOccurred;
         }
       }
     } else {
       for (let row = 0; row < tiles.length; ++row) {
         for (let column = 0; column < tiles[row].length; ++column) {
-          this.moveInDirection(
-            tiles,
-            deletedTiles,
-            row,
-            column,
-            rowOffset,
-            colOffset
-          );
+          moveOccurred =
+            this.moveInDirection(
+              tiles,
+              deletedTiles,
+              row,
+              column,
+              rowOffset,
+              colOffset
+            ) || moveOccurred;
         }
       }
     }
-    if (this.gridsEqual(tiles, this.state.tiles)) return;
+    if (!moveOccurred) return;
     this.addRandomTile(tiles);
     this.setState({ tiles: tiles, deletedTiles: deletedTiles });
   };
 
-  moveTile = (tiles, rowPrev, colPrev, rowNext, colNext) => {
-    const tile = tiles[rowPrev][colPrev];
-    const previousPosition =
-      tile.previousPosition !== undefined
-        ? tile.previousPosition
-        : [rowPrev, colPrev];
-    const tileCopy = this.createTile(tile.value, tile.index, previousPosition);
-    tiles[rowNext][colNext] = tileCopy;
-    tiles[rowPrev][colPrev] = this.createTile(0);
+  moveTile = (tiles, fromRow, fromCol, toRow, toCol) => {
+    tiles[toRow][toCol] = tiles[fromRow][fromCol];
+    tiles[fromRow][fromCol] = undefined;
   };
 
   outOfBounds(row, col) {
@@ -207,17 +163,17 @@ class TileGrid extends Component {
     const adjacentRow = row + adjacentRowOffset;
     const adjacentCol = column + adjacentColOffset;
     if (this.outOfBounds(adjacentRow, adjacentCol)) {
-      return;
+      return false;
     }
 
     const tile = tiles[row][column];
-    if (tile.value === 0) {
-      return;
+    if (!tile) {
+      return false;
     }
 
     const adjacentTile = tiles[adjacentRow][adjacentCol];
 
-    if (adjacentTile.value === 0) {
+    if (!adjacentTile) {
       this.moveTile(tiles, row, column, adjacentRow, adjacentCol);
       this.moveInDirection(
         tiles,
@@ -227,8 +183,10 @@ class TileGrid extends Component {
         adjacentRowOffset,
         adjacentColOffset
       );
+      return true;
     } else if (adjacentTile.canUpdate && adjacentTile.value === tile.value) {
       deletedTiles.push({
+        index: tile.index,
         value: tile.value,
         startRow: tile.previousPosition[0],
         endRow: adjacentRow,
@@ -236,6 +194,7 @@ class TileGrid extends Component {
         endCol: adjacentCol
       });
       deletedTiles.push({
+        index: adjacentTile.index,
         value: adjacentTile.value,
         startRow: adjacentTile.previousPosition[0],
         endRow: adjacentRow,
@@ -244,8 +203,23 @@ class TileGrid extends Component {
       });
       tiles[adjacentRow][adjacentCol] = this.createTile(tile.value * 2);
       tiles[adjacentRow][adjacentCol].canUpdate = false;
-      tiles[row][column] = this.createTile(0);
+      tiles[row][column] = undefined;
+      return true;
     }
+    return false;
+  };
+
+  getTileHtml = (tile, row, col) => {
+    if (!tile) return;
+    return (
+      <Tile
+        key={tile.index}
+        value={tile.value}
+        row={row}
+        col={col}
+        previousPosition={tile.previousPosition}
+      />
+    );
   };
 
   render() {
@@ -277,16 +251,11 @@ class TileGrid extends Component {
         </div>
 
         {this.state.tiles.map((tileRow, row) =>
-          tileRow.map((tile, col) => (
-            <Tile
-              key={tile.index}
-              value={tile.value}
-              row={row}
-              col={col}
-              previousPosition={tile.previousPosition}
-            />
-          ))
+          tileRow.map((tile, col) => {
+            return this.getTileHtml(tile, row, col);
+          })
         )}
+
         {this.state.deletedTiles.map(tile => (
           <Tile
             key={tile.index}
