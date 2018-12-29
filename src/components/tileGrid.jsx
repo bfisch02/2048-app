@@ -103,6 +103,10 @@ class TileGrid extends Component {
     return false;
   };
 
+  componentDidMount() {
+    document.addEventListener("keydown", this.handleKeydown, false);
+  }
+
   handleKeydown = event => {
     if (event.code === "ArrowLeft") {
       this.handleLeftClick();
@@ -115,51 +119,45 @@ class TileGrid extends Component {
     }
   };
 
-  componentDidMount() {
-    document.addEventListener("keydown", this.handleKeydown, false);
-  }
-
   handleLeftClick = () => {
-    let tiles = this.copyTiles();
-    for (let row = 0; row < tiles.length; ++row) {
-      for (let column = 0; column < tiles[row].length; ++column) {
-        this.moveLeft(tiles, row, column);
-      }
-    }
-    if (this.gridsEqual(tiles, this.state.tiles)) return;
-    this.addRandomTile(tiles);
-    this.setState({ tiles: tiles });
+    const rowOffset = 0;
+    const colOffset = -1;
+    this.moveTiles(rowOffset, colOffset);
   };
 
   handleRightClick = () => {
-    let tiles = this.copyTiles();
-    for (let row = 0; row < tiles.length; ++row) {
-      for (let column = tiles[row].length - 1; column >= 0; --column) {
-        this.moveRight(tiles, row, column);
-      }
-    }
-    if (this.gridsEqual(tiles, this.state.tiles)) return;
-    this.addRandomTile(tiles);
-    this.setState({ tiles: tiles });
+    const rowOffset = 0;
+    const colOffset = 1;
+    const processTilesInReverse = true;
+    this.moveTiles(rowOffset, colOffset, processTilesInReverse);
   };
 
   handleUpClick = () => {
-    let tiles = this.copyTiles();
-    for (let row = 0; row < tiles.length; ++row) {
-      for (let column = 0; column < tiles[row].length; ++column) {
-        this.moveUp(tiles, row, column);
-      }
-    }
-    if (this.gridsEqual(tiles, this.state.tiles)) return;
-    this.addRandomTile(tiles);
-    this.setState({ tiles: tiles });
+    const rowOffset = -1;
+    const colOffset = 0;
+    this.moveTiles(rowOffset, colOffset);
   };
 
   handleDownClick = () => {
+    const rowOffset = 1;
+    const colOffset = 0;
+    const processTilesInReverse = true;
+    this.moveTiles(rowOffset, colOffset, processTilesInReverse);
+  };
+
+  moveTiles = (rowOffset, colOffset, processTilesInReverse = false) => {
     let tiles = this.copyTiles();
-    for (let row = tiles.length - 1; row >= 0; --row) {
-      for (let column = 0; column < tiles[row].length; ++column) {
-        this.moveDown(tiles, row, column);
+    if (processTilesInReverse) {
+      for (let row = tiles.length - 1; row >= 0; --row) {
+        for (let column = tiles[row].length - 1; column >= 0; --column) {
+          this.moveInDirection(tiles, row, column, rowOffset, colOffset);
+        }
+      }
+    } else {
+      for (let row = 0; row < tiles.length; ++row) {
+        for (let column = 0; column < tiles[row].length; ++column) {
+          this.moveInDirection(tiles, row, column, rowOffset, colOffset);
+        }
       }
     }
     if (this.gridsEqual(tiles, this.state.tiles)) return;
@@ -173,58 +171,9 @@ class TileGrid extends Component {
       tile.previousPosition !== undefined
         ? tile.previousPosition
         : [rowPrev, colPrev];
-    console.log("MOVING TILE! PREVIOUS POSITION:", previousPosition);
     const tileCopy = this.createTile(tile.value, tile.index, previousPosition);
     tiles[rowNext][colNext] = tileCopy;
     tiles[rowPrev][colPrev] = this.createTile(0);
-  };
-
-  moveLeft = (tiles, row, column) => {
-    const adjacentRowOffset = 0;
-    const adjacentColOffset = -1;
-    this.moveInDirection(
-      tiles,
-      row,
-      column,
-      adjacentRowOffset,
-      adjacentColOffset
-    );
-  };
-
-  moveRight = (tiles, row, column) => {
-    const adjacentRowOffset = 0;
-    const adjacentColOffset = 1;
-    this.moveInDirection(
-      tiles,
-      row,
-      column,
-      adjacentRowOffset,
-      adjacentColOffset
-    );
-  };
-
-  moveUp = (tiles, row, column) => {
-    const adjacentRowOffset = -1;
-    const adjacentColOffset = 0;
-    this.moveInDirection(
-      tiles,
-      row,
-      column,
-      adjacentRowOffset,
-      adjacentColOffset
-    );
-  };
-
-  moveDown = (tiles, row, column) => {
-    const adjacentRowOffset = 1;
-    const adjacentColOffset = 0;
-    this.moveInDirection(
-      tiles,
-      row,
-      column,
-      adjacentRowOffset,
-      adjacentColOffset
-    );
   };
 
   moveInDirection = (
@@ -262,11 +211,7 @@ class TileGrid extends Component {
         adjacentColOffset
       );
     } else if (adjacentTile.canUpdate && adjacentTile.value === tile.value) {
-      tiles[adjacentRow][adjacentCol] = this.createTile(
-        tile.value * 2,
-        undefined,
-        tile.previousPosition
-      );
+      tiles[adjacentRow][adjacentCol] = this.createTile(tile.value * 2);
       tiles[adjacentRow][adjacentCol].canUpdate = false;
       tiles[row][column] = this.createTile(0);
     }
