@@ -48,21 +48,6 @@ class TileGrid extends Component {
     };
   };
 
-  copyTiles = () => {
-    let tilesCopy = this.createEmptyTileGrid();
-    for (let row = 0; row < this.state.tiles.length; ++row) {
-      for (let col = 0; col < this.state.tiles[row].length; ++col) {
-        const tile = this.state.tiles[row][col];
-        if (tile) {
-          tilesCopy[row][col] = { ...tile };
-          tilesCopy[row][col].previousPosition = [row, col];
-          tilesCopy[row][col].canUpdate = true;
-        }
-      }
-    }
-    return tilesCopy;
-  };
-
   componentDidMount() {
     document.addEventListener("keydown", this.handleKeydown, false);
   }
@@ -106,14 +91,14 @@ class TileGrid extends Component {
   };
 
   moveTiles = (rowOffset, colOffset, processTilesInReverse = false) => {
-    let tiles = this.copyTiles();
+    let tiles = this.copyTilesForMove();
     let deletedTiles = [];
     let moveOccurred = false;
     if (processTilesInReverse) {
       for (let row = tiles.length - 1; row >= 0; --row) {
         for (let column = tiles[row].length - 1; column >= 0; --column) {
           moveOccurred =
-            this.moveInDirection(
+            this.moveTileInDirection(
               tiles,
               deletedTiles,
               row,
@@ -127,7 +112,7 @@ class TileGrid extends Component {
       for (let row = 0; row < tiles.length; ++row) {
         for (let column = 0; column < tiles[row].length; ++column) {
           moveOccurred =
-            this.moveInDirection(
+            this.moveTileInDirection(
               tiles,
               deletedTiles,
               row,
@@ -143,16 +128,27 @@ class TileGrid extends Component {
     this.setState({ tiles: tiles, deletedTiles: deletedTiles });
   };
 
+  copyTilesForMove = () => {
+    let tilesCopy = this.createEmptyTileGrid();
+    for (let row = 0; row < this.state.tiles.length; ++row) {
+      for (let col = 0; col < this.state.tiles[row].length; ++col) {
+        const tile = this.state.tiles[row][col];
+        if (tile) {
+          tilesCopy[row][col] = { ...tile };
+          tilesCopy[row][col].previousPosition = [row, col];
+          tilesCopy[row][col].canUpdate = true;
+        }
+      }
+    }
+    return tilesCopy;
+  };
+
   moveTile = (tiles, fromRow, fromCol, toRow, toCol) => {
     tiles[toRow][toCol] = tiles[fromRow][fromCol];
     tiles[fromRow][fromCol] = undefined;
   };
 
-  outOfBounds(row, col) {
-    return row < 0 || row > 3 || col < 0 || col > 3;
-  }
-
-  moveInDirection = (
+  moveTileInDirection = (
     tiles,
     deletedTiles,
     row,
@@ -160,22 +156,21 @@ class TileGrid extends Component {
     adjacentRowOffset,
     adjacentColOffset
   ) => {
+    const tile = tiles[row][column];
+    if (!tile) {
+      return false;
+    }
+
     const adjacentRow = row + adjacentRowOffset;
     const adjacentCol = column + adjacentColOffset;
     if (this.outOfBounds(adjacentRow, adjacentCol)) {
       return false;
     }
 
-    const tile = tiles[row][column];
-    if (!tile) {
-      return false;
-    }
-
     const adjacentTile = tiles[adjacentRow][adjacentCol];
-
     if (!adjacentTile) {
       this.moveTile(tiles, row, column, adjacentRow, adjacentCol);
-      this.moveInDirection(
+      this.moveTileInDirection(
         tiles,
         deletedTiles,
         adjacentRow,
@@ -184,23 +179,11 @@ class TileGrid extends Component {
         adjacentColOffset
       );
       return true;
-    } else if (adjacentTile.canUpdate && adjacentTile.value === tile.value) {
-      deletedTiles.push({
-        index: tile.index,
-        value: tile.value,
-        startRow: tile.previousPosition[0],
-        endRow: adjacentRow,
-        startCol: tile.previousPosition[1],
-        endCol: adjacentCol
-      });
-      deletedTiles.push({
-        index: adjacentTile.index,
-        value: adjacentTile.value,
-        startRow: adjacentTile.previousPosition[0],
-        endRow: adjacentRow,
-        startCol: adjacentTile.previousPosition[1],
-        endCol: adjacentCol
-      });
+    } else if (this.canMergeTiles(tile, adjacentTile)) {
+      deletedTiles.push(this.createDeletedTile(tile, adjacentRow, adjacentCol));
+      deletedTiles.push(
+        this.createDeletedTile(adjacentTile, adjacentRow, adjacentCol)
+      );
       tiles[adjacentRow][adjacentCol] = this.createTile(tile.value * 2);
       tiles[adjacentRow][adjacentCol].canUpdate = false;
       tiles[row][column] = undefined;
@@ -209,7 +192,26 @@ class TileGrid extends Component {
     return false;
   };
 
-  getTileHtml = (tile, row, col) => {
+  outOfBounds = (row, col) => {
+    return row < 0 || row > 3 || col < 0 || col > 3;
+  };
+
+  canMergeTiles = (tile, adjacentTile) => {
+    return adjacentTile.canUpdate && tile.value === adjacentTile.value;
+  };
+
+  createDeletedTile = (tile, endRow, endCol) => {
+    return {
+      index: tile.index,
+      value: tile.value,
+      startRow: tile.previousPosition[0],
+      startCol: tile.previousPosition[1],
+      endRow: endRow,
+      endCol: endCol
+    };
+  };
+
+  renderTile = (tile, row, col) => {
     if (!tile) return;
     return (
       <Tile
@@ -252,7 +254,7 @@ class TileGrid extends Component {
 
         {this.state.tiles.map((tileRow, row) =>
           tileRow.map((tile, col) => {
-            return this.getTileHtml(tile, row, col);
+            return this.renderTile(tile, row, col);
           })
         )}
 
