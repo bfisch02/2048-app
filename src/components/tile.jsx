@@ -25,6 +25,8 @@ class Tile extends Component {
       } else if (col !== previousPosition[1]) {
         classString += " " + gridTilePrevColClass;
       }
+    } else {
+      classString += " grid-tile-new";
     }
     return classString;
   };
