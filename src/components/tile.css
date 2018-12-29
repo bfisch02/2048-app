@@ -85,11 +85,19 @@
 
 .grid-tile-new {
   animation-name: tile-new;
-  animation-duration: 0.4s;
+  animation-duration: 0.25s;
 }
 
 @keyframes tile-new {
   0% {
+    width: 0px;
+    height: 0px;
+    margin-left: 50px;
+    margin-top: 50px;
+    line-height: 0px;
+    font-size: 0px;
+  }
+  50% {
     width: 0px;
     height: 0px;
     margin-left: 50px;
