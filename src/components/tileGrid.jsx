@@ -93,39 +93,38 @@ class TileGrid extends Component {
   moveTiles = (rowOffset, colOffset, processTilesInReverse = false) => {
     let tiles = this.copyTilesForMove();
     let deletedTiles = [];
-    let moveOccurred = false;
+    let scoreIncrease = 0;
     if (processTilesInReverse) {
       for (let row = tiles.length - 1; row >= 0; --row) {
         for (let column = tiles[row].length - 1; column >= 0; --column) {
-          moveOccurred =
-            this.moveTileInDirection(
-              tiles,
-              deletedTiles,
-              row,
-              column,
-              rowOffset,
-              colOffset
-            ) || moveOccurred;
+          scoreIncrease += this.moveTileInDirection(
+            tiles,
+            deletedTiles,
+            row,
+            column,
+            rowOffset,
+            colOffset
+          );
         }
       }
     } else {
       for (let row = 0; row < tiles.length; ++row) {
         for (let column = 0; column < tiles[row].length; ++column) {
-          moveOccurred =
-            this.moveTileInDirection(
-              tiles,
-              deletedTiles,
-              row,
-              column,
-              rowOffset,
-              colOffset
-            ) || moveOccurred;
+          scoreIncrease += this.moveTileInDirection(
+            tiles,
+            deletedTiles,
+            row,
+            column,
+            rowOffset,
+            colOffset
+          );
         }
       }
     }
-    if (!moveOccurred) return;
+    if (!this.moveOccurred(tiles)) return;
     this.addRandomTile(tiles);
     this.setState({ tiles: tiles, deletedTiles: deletedTiles });
+    this.props.onIncrementScore(scoreIncrease);
   };
 
   copyTilesForMove = () => {
@@ -158,19 +157,19 @@ class TileGrid extends Component {
   ) => {
     const tile = tiles[row][column];
     if (!tile) {
-      return false;
+      return 0;
     }
 
     const adjacentRow = row + adjacentRowOffset;
     const adjacentCol = column + adjacentColOffset;
     if (this.outOfBounds(adjacentRow, adjacentCol)) {
-      return false;
+      return 0;
     }
 
     const adjacentTile = tiles[adjacentRow][adjacentCol];
     if (!adjacentTile) {
       this.moveTile(tiles, row, column, adjacentRow, adjacentCol);
-      this.moveTileInDirection(
+      return this.moveTileInDirection(
         tiles,
         deletedTiles,
         adjacentRow,
@@ -178,16 +177,31 @@ class TileGrid extends Component {
         adjacentRowOffset,
         adjacentColOffset
       );
-      return true;
     } else if (this.canMergeTiles(tile, adjacentTile)) {
       deletedTiles.push(this.createDeletedTile(tile, adjacentRow, adjacentCol));
       deletedTiles.push(
         this.createDeletedTile(adjacentTile, adjacentRow, adjacentCol)
       );
-      tiles[adjacentRow][adjacentCol] = this.createTile(tile.value * 2);
+      const newTileValue = tile.value * 2;
+      tiles[adjacentRow][adjacentCol] = this.createTile(newTileValue);
       tiles[adjacentRow][adjacentCol].canUpdate = false;
       tiles[row][column] = undefined;
-      return true;
+      return newTileValue;
+    }
+    return 0;
+  };
+
+  moveOccurred = newTiles => {
+    for (let row = 0; row < newTiles.length; ++row) {
+      for (let col = 0; col < newTiles[row].length; ++col) {
+        const oldTile = this.state.tiles[row][col];
+        const newTile = newTiles[row][col];
+        const oldTileValue = oldTile === undefined ? 0 : oldTile.value;
+        const newTileValue = newTile === undefined ? 0 : newTile.value;
+        if (oldTileValue !== newTileValue) {
+          return true;
+        }
+      }
     }
     return false;
   };

@@ -1,25 +1,36 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import "./App.css";
+import "bootstrap/dist/css/bootstrap.css";
+import TileGrid from "./components/tileGrid.jsx";
+import Score from "./components/score.jsx";
 
 class App extends Component {
+  state = {
+    score: 0,
+    lastIncrement: 0
+  };
+
+  handleIncrementScore = value => {
+    console.log(value);
+    const score = this.state.score + value;
+    this.setState({ score: score, lastIncrement: value });
+  };
+
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+      <div className="app">
+        <div className="header">
+          <h1 className="title">2048</h1>
+          <div className="score">
+            <Score
+              score={this.state.score}
+              increment={this.state.lastIncrement}
+            />
+          </div>
+        </div>
+        <div className="grid">
+          <TileGrid onIncrementScore={this.handleIncrementScore} />
+        </div>
       </div>
     );
   }

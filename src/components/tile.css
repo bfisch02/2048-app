@@ -223,3 +223,15 @@
   font-size: 30px;
   z-index: 13;
 }
+
+.grid-tile-8192 {
+  background: rgb(255, 0, 221);
+  font-size: 30px;
+  z-index: 14;
+}
+
+.grid-tile-16384 {
+  background: rgb(255, 0, 221);
+  font-size: 26px;
+  z-index: 15;
+}
